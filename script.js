@@ -3,23 +3,73 @@ let mediaRecorder;
 let reocrdButton = document.getElementById("record");
 let isRecording = false;
 let chunks= [];
+let captureBtn = document.getElementById("capture");
+let body = document.querySelector("body");
+let filters = document.querySelectorAll(".filter");
+let filter = "";
+
+for(let i = 0; i < filters.length; i++)
+{
+    let filterSelected = filters[i];
+    filterSelected.addEventListener("click", function(){
+        
+        if(document.querySelector(".filter-div"))
+        document.querySelector(".filter-div").remove();
+    
+        filter = filterSelected.style.backgroundColor;
+        let filterDiv = document.createElement("div");
+        filterDiv.classList.add("filter-div");
+        filterDiv.style.backgroundColor = filter;
+        body.append(filterDiv);
+    })
+}
 
 reocrdButton.addEventListener("click", function(){
+    let innerSpan = reocrdButton.querySelector("span");
     if(isRecording)
     {
         //recording ko stop krna hai
         //already defined function hai on media recorder
         mediaRecorder.stop();
-        isRecording = false;
-    }
+        isRecording = false;   
+        innerSpan.classList.remove("record-animation");
+     }
     else
     {
         //recording ko start krna hai
         //already defined function hai on media recorder
         mediaRecorder.start();
         isRecording = true;
-    }
+        innerSpan.classList.add("record-animation");
+    }    
 })
+
+captureBtn.addEventListener("click",function(){
+    let innerSpan = captureBtn.querySelector("span");
+    innerSpan.classList.add("capture-animation");
+    setTimeout(function(){
+        innerSpan.classList.remove("capture-animation");
+    },1000)
+    let canvas = document.createElement("canvas");
+    canvas.height = videoPlayer.videoHeight;
+    canvas.width = videoPlayer.videoWidth;
+    let tool = canvas.getContext("2d");
+    tool.drawImage(videoPlayer, 0, 0);
+
+    if(filter)
+    {
+        tool.fillStyle = filter;
+        tool.fillRect(0,0,canvas.width,canvas.height);
+    }
+
+    let imgURL = canvas.toDataURL();
+    let a = document.createElement("a");
+    a.href = imgURL;
+    a.download = "img.jpeg";
+    a.click();
+    a.remove();
+})
+
 
 //navigator ek object hai Navigator function ka jisme ek object aur hai mediaDevices jiska ek function hai getUserMedia jiske through hum permission lete hai camera aur audio device use krne ki
 let promiseToUseCamera = navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -28,6 +78,7 @@ let promiseToUseCamera = navigator.mediaDevices.getUserMedia({video: true, audio
 promiseToUseCamera.then(function(mediaStreamObj){
     //video tag ko hume ek src dena hota hai lekin humaare pass koi url nhi hai isliye hum usko object dete hai joki mediaStreamObject hota hai jo humko getUserMedia ne return kra hota hai aur uska srcObject ki tarah set krdete hai video tag mai
     videoPlayer.srcObject = mediaStreamObj;
+    
 
     //record krti hai uss stream ki video ko jiska object hum usse paas krte hai
     mediaRecorder = new MediaRecorder(mediaStreamObj);
@@ -50,6 +101,7 @@ promiseToUseCamera.then(function(mediaStreamObj){
         videoDownloadLink.href = blobLink;
         videoDownloadLink.download = "video.mp4";
         videoDownloadLink.click();
+        videoDownloadLink.remove();
     })
 })
 .catch(function(){
