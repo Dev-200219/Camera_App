@@ -7,6 +7,14 @@ let captureBtn = document.getElementById("capture");
 let body = document.querySelector("body");
 let filters = document.querySelectorAll(".filter");
 let filter = "";
+let zoomIn = document.getElementById("in");
+let zoomOut = document.getElementById("out");
+let currZoom = 1; //minZoom = 1 && maxZoom = 3;
+let galleryBtn = document.getElementById("gallery");
+
+galleryBtn.addEventListener("click", function(){
+    location.assign("gallery.html");
+})
 
 for(let i = 0; i < filters.length; i++)
 {
@@ -24,6 +32,21 @@ for(let i = 0; i < filters.length; i++)
     })
 }
 
+zoomIn.addEventListener("click", function(){
+    currZoom+=0.1;
+    if(currZoom > 3)
+    currZoom = 3;
+    console.log(currZoom);
+    videoPlayer.style.transform = `scale(${currZoom})`;
+})
+
+zoomOut.addEventListener("click", function(){
+    currZoom-=0.1;
+    if(currZoom < 1)
+    currZoom = 1;
+    videoPlayer.style.transform = `scale(${currZoom})`;
+})
+
 reocrdButton.addEventListener("click", function(){
     let innerSpan = reocrdButton.querySelector("span");
     if(isRecording)
@@ -35,7 +58,13 @@ reocrdButton.addEventListener("click", function(){
         innerSpan.classList.remove("record-animation");
      }
     else
-    {
+    {   if(document.querySelector(".filter-div"))
+        {
+            document.querySelector(".filter-div").remove();
+            filter="";
+        }
+        currZoom = 1;
+        videoPlayer.style.transform = `scale(1)`;
         //recording ko start krna hai
         //already defined function hai on media recorder
         mediaRecorder.start();
@@ -54,6 +83,14 @@ captureBtn.addEventListener("click",function(){
     canvas.height = videoPlayer.videoHeight;
     canvas.width = videoPlayer.videoWidth;
     let tool = canvas.getContext("2d");
+    
+    //origin ko top left se center mai shift krna kyuki hume beech se zoom krna hai
+    tool.translate(canvas.width/2,canvas.height/2);
+    //scale property se hum zoom ya stretch krenge jaise humne ui pr kia
+    tool.scale(currZoom,currZoom);
+    //origin ko wapis top left le gye kyuki photo hume top left se hi draw krni hai
+    tool.translate(-canvas.width/2, -canvas.height/2);
+
     tool.drawImage(videoPlayer, 0, 0);
 
     if(filter)
@@ -63,11 +100,7 @@ captureBtn.addEventListener("click",function(){
     }
 
     let imgURL = canvas.toDataURL();
-    let a = document.createElement("a");
-    a.href = imgURL;
-    a.download = "img.jpeg";
-    a.click();
-    a.remove();
+    saveMedia(imgURL);
 })
 
 
@@ -92,16 +125,16 @@ promiseToUseCamera.then(function(mediaStreamObj){
         //jaise hi stop hota hai, hum uss chunk ka ek blob bnate hai using already defined object Blob
         let blob = new Blob(chunks, {type:"video/mp4"});
         chunks=[];
+        saveMedia(blob);
         
         //agar hume usse blob ko download krna hai toh uska link bnana hoga aur uss link ko bnane ke liye hai already pre-defined function URL.createObjectURL isme vo blob paas kro aur uska link bn jata hai
-        let blobLink = URL.createObjectURL(blob);
-
+        // let blobLink = URL.createObjectURL(blob);
         //download krne ke liye ek a tag bnaya aur usme yeh link attach krdia, aur usko download property dedi, phir uss or click krdia
-        let videoDownloadLink = document.createElement("a");
-        videoDownloadLink.href = blobLink;
-        videoDownloadLink.download = "video.mp4";
-        videoDownloadLink.click();
-        videoDownloadLink.remove();
+        // let videoDownloadLink = document.createElement("a");
+        // videoDownloadLink.href = blobLink;
+        // videoDownloadLink.download = "video.mp4";
+        // videoDownloadLink.click();
+        // videoDownloadLink.remove();
     })
 })
 .catch(function(){

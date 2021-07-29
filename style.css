@@ -45,6 +45,20 @@ video{
 
 }
 
+#gallery{
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    height: 4rem;
+    width: 4rem;
+}
+
+#gallery span{
+    font-size: 2.5rem!important;
+}
+#gallery{
+    z-index: 3;
+}
 #record span{
     height: 2rem;
     width: 2rem;
@@ -93,7 +107,7 @@ video{
     z-index: 3;
 }
 
-.in, .out{
+#in, #out{
     flex-grow: 1;
     border: 1px solid white;
     color: white;
@@ -101,7 +115,6 @@ video{
     justify-content: center;
     align-items: center;
     font-size: 2rem;
-    /* border-radius: 50%; */
     height: 4rem;
     width:4rem;
 }
